@@ -4,7 +4,7 @@ import { api } from '../api/client';
 const SITE_URL = 'https://zinbohtetaung.com';
 const PSI_KEY  = import.meta.env.VITE_PSI_KEY || '';
 const PSI_URL  = (strategy) =>
-  `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(SITE_URL)}&strategy=${strategy}${PSI_KEY ? `&key=${PSI_KEY}` : ''}`;
+  `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(SITE_URL)}&strategy=${strategy}&category=performance&category=accessibility&category=seo&category=best-practices${PSI_KEY ? `&key=${PSI_KEY}` : ''}`;
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -66,9 +66,10 @@ function PerformancePanel({ strategy }) {
       const cat  = lh.categories;
       const aud  = lh.audits;
       setData({
-        perf:         Math.round((cat.performance?.score  ?? 0) * 100),
-        accessibility:Math.round((cat.accessibility?.score ?? 0) * 100),
-        seo:          Math.round((cat.seo?.score          ?? 0) * 100),
+        perf:         Math.round((cat.performance?.score        ?? 0) * 100),
+        accessibility:Math.round((cat.accessibility?.score     ?? 0) * 100),
+        seo:          Math.round((cat.seo?.score               ?? 0) * 100),
+        bestPractices:Math.round((cat['best-practices']?.score ?? 0) * 100),
         fcp:  aud['first-contentful-paint']?.displayValue,
         lcp:  aud['largest-contentful-paint']?.displayValue,
         tbt:  aud['total-blocking-time']?.displayValue,
@@ -127,6 +128,7 @@ function PerformancePanel({ strategy }) {
           <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '.5rem' }}>
             <ScoreRing score={data.perf}          label="Performance" />
             <ScoreRing score={data.accessibility} label="Accessibility" />
+            <ScoreRing score={data.bestPractices} label="Best Practices" />
             <ScoreRing score={data.seo}           label="SEO" />
           </div>
           <div>
