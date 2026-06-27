@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 
 function StatCard({ label, value, sub }) {
@@ -26,10 +26,82 @@ function Badge({ ok }) {
   );
 }
 
+function BackupHistory() {
+  const [backups, setBackups]   = useState([]);
+  const [section, setSection]   = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [expanded, setExpanded] = useState(null);
+  const [detail, setDetail]     = useState(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api.getBackups(section)
+      .then(res => setBackups(res.data || []))
+      .finally(() => setLoading(false));
+  }, [section]);
+
+  useEffect(load, [load]);
+
+  async function viewDetail(id) {
+    if (expanded === id) { setExpanded(null); setDetail(null); return; }
+    setExpanded(id);
+    setDetail(null);
+    const res = await api.getBackup(id);
+    setDetail(JSON.stringify(res.data, null, 2));
+  }
+
+  const sections = ['', 'profile', 'hero', 'about', 'education', 'experience', 'projects', 'skills'];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.75rem', flexWrap: 'wrap' }}>
+        <h2 style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em' }}>
+          Change History
+        </h2>
+        <select value={section} onChange={e => setSection(e.target.value)}
+          style={{ width: 'auto', padding: '.3rem .6rem', fontSize: 12 }}>
+          {sections.map(s => <option key={s} value={s}>{s || 'All sections'}</option>)}
+        </select>
+        <button className="btn-ghost" onClick={load} style={{ padding: '.3rem .7rem', fontSize: 12 }}>↻</button>
+      </div>
+
+      {loading && <div style={{ color: 'var(--muted)', fontSize: 13 }}>Loading…</div>}
+
+      {!loading && backups.length === 0 && (
+        <div style={{ color: 'var(--muted)', fontSize: 13 }}>
+          No backups yet — they're created automatically before every save or delete.
+        </div>
+      )}
+
+      {backups.map(b => (
+        <div key={b.id} style={{ marginBottom: '.4rem' }}>
+          <div className="list-item" style={{ cursor: 'pointer' }} onClick={() => viewDetail(b.id)}>
+            <div className="info">
+              <strong style={{ textTransform: 'capitalize' }}>{b.section}</strong>
+              <span>{new Date(b.createdAt).toLocaleString()}</span>
+            </div>
+            <span style={{ color: 'var(--muted)', fontSize: 12 }}>{expanded === b.id ? '▲ hide' : '▼ view'}</span>
+          </div>
+          {expanded === b.id && (
+            <pre style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: '0 0 8px 8px', padding: '.8rem 1rem',
+              fontSize: 11.5, overflowX: 'auto', color: 'var(--text)',
+              maxHeight: 300, overflowY: 'auto', margin: 0,
+            }}>
+              {detail ?? 'Loading…'}
+            </pre>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function OverviewPage() {
-  const [data, setData]     = useState(null);
+  const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState('');
+  const [error, setError]     = useState('');
   const [lastRefresh, setLastRefresh] = useState(null);
 
   function load() {
@@ -94,13 +166,15 @@ export default function OverviewPage() {
       <h2 style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.75rem' }}>
         Content
       </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '.75rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '.75rem', marginBottom: '2rem' }}>
         <StatCard label="Experience" value={counts.experience} sub="entries" />
         <StatCard label="Projects"   value={counts.projects}   sub="entries" />
         <StatCard label="Skills"     value={counts.skills}     sub="pills" />
         <StatCard label="Languages"  value={counts.languages}  sub="entries" />
         <StatCard label="Education"  value={counts.education}  sub="entries" />
       </div>
+
+      <BackupHistory />
     </div>
   );
 }

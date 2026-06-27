@@ -21,6 +21,8 @@ async function request(path, options = {}) {
 
 export const api = {
   getInsights: () => request('/api/admin/insights'),
+  getBackups: (section) => request(`/api/admin/backups${section ? `?section=${section}` : ''}`),
+  getBackup: (id) => request(`/api/admin/backups/${id}`),
 
   login: (password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),
