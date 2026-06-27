@@ -15,13 +15,16 @@ async function request(path, options = {}) {
     },
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+  if (!res.ok) throw new Error(json.error || json.data || `HTTP ${res.status}`);
   return json;
 }
 
 export const api = {
   login: (password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),
+
+  verifyOtp: (code) =>
+    request('/api/auth/verify', { method: 'POST', body: JSON.stringify({ code }) }),
 
   // Profile / Hero / About
   getProfile: () => request('/api/admin/profile'),
