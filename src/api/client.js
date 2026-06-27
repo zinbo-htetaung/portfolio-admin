@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL || 'https://portfolio-api-java-production.up.railway.app';
+const BASE = import.meta.env.VITE_API_URL || 'https://api.zinbohtetaung.com';
 
 function getToken() {
   return localStorage.getItem('admin_token');
