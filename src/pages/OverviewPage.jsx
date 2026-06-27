@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 
 const SITE_URL = 'https://zinbohtetaung.com';
+const PSI_KEY  = import.meta.env.VITE_PSI_KEY || '';
 const PSI_URL  = (strategy) =>
-  `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(SITE_URL)}&strategy=${strategy}`;
+  `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(SITE_URL)}&strategy=${strategy}${PSI_KEY ? `&key=${PSI_KEY}` : ''}`;
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -91,13 +92,21 @@ function PerformancePanel({ strategy }) {
         <h3 style={{ fontSize: '.9rem', fontWeight: 700, textTransform: 'capitalize' }}>
           {strategy === 'mobile' ? '📱 Mobile' : '🖥️ Desktop'}
         </h3>
-        <button className="btn-ghost" onClick={run} disabled={state === 'loading'}
-          style={{ padding: '.35rem .8rem', fontSize: 12 }}>
+        <button className="btn-ghost" onClick={run} disabled={state === 'loading' || !PSI_KEY}
+          style={{ padding: '.35rem .8rem', fontSize: 12 }}
+          title={!PSI_KEY ? 'Add VITE_PSI_KEY to Vercel env vars first' : ''}>
           {state === 'loading' ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Running…</> : '▶ Run Test'}
         </button>
       </div>
 
-      {state === 'idle' && (
+      {state === 'idle' && !PSI_KEY && (
+        <div style={{ color: 'var(--danger)', fontSize: 13, padding: '1rem 0' }}>
+          Add <code style={{ background: 'var(--surface2)', padding: '.1rem .35rem', borderRadius: 4 }}>VITE_PSI_KEY</code> to your Vercel environment variables to enable this.
+          <a href="https://developers.google.com/speed/docs/insights/v5/get-started" target="_blank" rel="noopener noreferrer"
+            style={{ display: 'block', marginTop: '.4rem', fontSize: 12 }}>Get a free API key →</a>
+        </div>
+      )}
+      {state === 'idle' && PSI_KEY && (
         <div style={{ color: 'var(--muted)', fontSize: 13, textAlign: 'center', padding: '1.5rem 0' }}>
           Click "Run Test" to fetch live performance scores from Google PageSpeed Insights.
         </div>
