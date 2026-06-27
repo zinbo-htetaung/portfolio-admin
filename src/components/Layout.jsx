@@ -8,7 +8,7 @@ export default function Layout() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', maxWidth: 860 }}>
+      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', minWidth: 0 }}>
         <Outlet />
       </main>
     </div>
