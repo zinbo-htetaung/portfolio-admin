@@ -20,6 +20,8 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  getInsights: () => request('/api/admin/insights'),
+
   login: (password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),
 

@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 
 const links = [
+  { to: '/overview',   label: 'Overview' },
   { to: '/profile',    label: 'Profile & Hero' },
   { to: '/about',      label: 'About' },
   { to: '/education',  label: 'Education' },

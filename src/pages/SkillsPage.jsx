@@ -52,7 +52,7 @@ function PillForm({ initial, onSave, onCancel }) {
 
 // ── Skill Languages ────────────────────────────────────────────────────────────
 
-const LANG_EMPTY = { lang: '', level: 0, displayOrder: 0 };
+const LANG_EMPTY = { lang: '', level: '', displayOrder: 0 };
 
 function LangForm({ initial, onSave, onCancel }) {
   const [form, setForm] = useState(initial || LANG_EMPTY);
@@ -72,8 +72,8 @@ function LangForm({ initial, onSave, onCancel }) {
           <input value={form.lang} onChange={e => setForm({ ...form, lang: e.target.value })} required placeholder="JavaScript" />
         </div>
         <div className="field">
-          <label>Level (0–100)</label>
-          <input type="number" min={0} max={100} value={form.level} onChange={e => setForm({ ...form, level: +e.target.value })} />
+          <label>Proficiency Level</label>
+          <input value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} placeholder="e.g. Native, Full Professional, Limited Working" />
         </div>
         <div className="field" style={{ maxWidth: 120 }}>
           <label>Display Order</label>
