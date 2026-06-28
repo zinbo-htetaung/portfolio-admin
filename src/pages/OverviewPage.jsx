@@ -172,6 +172,89 @@ function Badge({ ok }) {
   );
 }
 
+// ── Visitors panel ─────────────────────────────────────────────────
+
+function VisitorsPanel() {
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab]         = useState('countries'); // 'countries' | 'recent'
+
+  useEffect(() => {
+    api.getVisitors()
+      .then(res => setData(res.data))
+      .catch(() => setData(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="card" style={{ color: 'var(--muted)', fontSize: 13 }}>Loading visitor data…</div>;
+  if (!data)   return <div className="card" style={{ color: 'var(--muted)', fontSize: 13 }}>No visitor data yet — data appears after the first real visit.</div>;
+
+  const maxCount = data.countries[0]?.count || 1;
+
+  return (
+    <div className="card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '.5rem' }}>
+        <div>
+          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent)' }}>{data.total}</span>
+          <span style={{ fontSize: 13, color: 'var(--muted)', marginLeft: '.5rem' }}>total visitors tracked</span>
+        </div>
+        <div style={{ display: 'flex', gap: '.4rem' }}>
+          {['countries', 'recent'].map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={tab === t ? 'btn-primary' : 'btn-ghost'}
+              style={{ padding: '.3rem .75rem', fontSize: 12, textTransform: 'capitalize' }}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'countries' && (
+        <div>
+          {data.countries.length === 0 && (
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>No country data yet.</div>
+          )}
+          {data.countries.map(c => (
+            <div key={c.country} style={{ marginBottom: '.65rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '.2rem' }}>
+                <span style={{ fontSize: 13 }}>{c.flag} {c.country}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{c.count}</span>
+              </div>
+              <div style={{ background: 'var(--border)', borderRadius: 4, height: 6, overflow: 'hidden' }}>
+                <div style={{
+                  width: `${(c.count / maxCount) * 100}%`,
+                  height: '100%', borderRadius: 4,
+                  background: 'var(--accent)',
+                  transition: 'width .5s ease',
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'recent' && (
+        <div>
+          {data.recent.length === 0 && (
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>No recent visits yet.</div>
+          )}
+          {data.recent.map((v, i) => (
+            <div key={i} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '.45rem 0', borderBottom: '1px solid var(--border)', fontSize: 13,
+            }}>
+              <span>{v.flag} {v.country}{v.city ? `, ${v.city}` : ''}</span>
+              <span style={{ color: 'var(--muted)', fontSize: 12 }}>
+                {new Date(v.visitedAt).toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Backup history ─────────────────────────────────────────────────
 
 function BackupHistory() {
@@ -328,6 +411,10 @@ export default function OverviewPage() {
         <StatCard label="Languages"  value={counts.languages}  sub="entries" />
         <StatCard label="Education"  value={counts.education}  sub="entries" />
       </div>
+
+      {/* Visitors */}
+      <SectionTitle>Visitor Locations</SectionTitle>
+      <VisitorsPanel />
 
       {/* Performance */}
       <SectionTitle>Page Performance — {SITE_URL}</SectionTitle>

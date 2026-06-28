@@ -14,6 +14,13 @@ async function request(path, options = {}) {
       ...options.headers,
     },
   });
+  // JWT expired or invalid — clear session and send to login
+  if (res.status === 401) {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('last_active');
+    window.location.replace('/login');
+    return;
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || json.data || `HTTP ${res.status}`);
   return json;
@@ -21,6 +28,7 @@ async function request(path, options = {}) {
 
 export const api = {
   getInsights: () => request('/api/admin/insights'),
+  getVisitors: () => request('/api/admin/visitors'),
   getBackups: (section) => request(`/api/admin/backups${section ? `?section=${section}` : ''}`),
   getBackup: (id) => request(`/api/admin/backups/${id}`),
 
