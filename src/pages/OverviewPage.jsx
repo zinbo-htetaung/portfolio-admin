@@ -172,6 +172,33 @@ function Badge({ ok }) {
   );
 }
 
+// ── Visitor helpers ────────────────────────────────────────────────
+
+function Chip({ icon, label }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '.25rem',
+      background: 'var(--surface)', border: '1px solid var(--border)',
+      borderRadius: 20, padding: '.15rem .55rem', fontSize: 11.5, color: 'var(--text)',
+    }}>
+      {icon} {label}
+    </span>
+  );
+}
+
+function referrerLabel(ref) {
+  if (!ref || ref === 'direct') return 'Direct';
+  try {
+    const host = new URL(ref).hostname.replace('www.', '');
+    if (host.includes('linkedin'))  return 'LinkedIn';
+    if (host.includes('google'))    return 'Google';
+    if (host.includes('github'))    return 'GitHub';
+    if (host.includes('facebook'))  return 'Facebook';
+    if (host.includes('twitter') || host.includes('x.com')) return 'X / Twitter';
+    return host;
+  } catch { return ref; }
+}
+
 // ── Visitors panel ─────────────────────────────────────────────────
 
 function VisitorsPanel() {
@@ -234,19 +261,37 @@ function VisitorsPanel() {
       )}
 
       {tab === 'recent' && (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
           {data.recent.length === 0 && (
             <div style={{ color: 'var(--muted)', fontSize: 13 }}>No recent visits yet.</div>
           )}
           {data.recent.map((v, i) => (
             <div key={i} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '.45rem 0', borderBottom: '1px solid var(--border)', fontSize: 13,
+              background: 'var(--surface2)', borderRadius: 8,
+              border: '1px solid var(--border)', padding: '.75rem 1rem',
+              fontSize: 13,
             }}>
-              <span>{v.flag} {v.country}{v.city ? `, ${v.city}` : ''}</span>
-              <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                {new Date(v.visitedAt).toLocaleString()}
-              </span>
+              {/* Row 1: location + time */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
+                <span style={{ fontWeight: 700 }}>{v.flag} {v.country}{v.city ? ` · ${v.city}` : ''}</span>
+                <span style={{ color: 'var(--muted)', fontSize: 11 }}>{new Date(v.visitedAt).toLocaleString()}</span>
+              </div>
+              {/* Row 2: device info */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '.35rem' }}>
+                {v.device   && <Chip icon={v.device === 'Mobile' ? '📱' : v.device === 'Tablet' ? '📟' : '🖥️'} label={v.device} />}
+                {v.browser  && <Chip icon="🌐" label={v.browser} />}
+                {v.os       && <Chip icon="💻" label={v.os} />}
+                {v.screen   && <Chip icon="📐" label={v.screen} />}
+                {v.darkMode != null && <Chip icon={v.darkMode ? '🌙' : '☀️'} label={v.darkMode ? 'Dark mode' : 'Light mode'} />}
+              </div>
+              {/* Row 3: context */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                {v.referrer && v.referrer !== 'direct' && <Chip icon="🔗" label={referrerLabel(v.referrer)} />}
+                {(!v.referrer || v.referrer === 'direct') && <Chip icon="✉️" label="Direct visit" />}
+                {v.language  && <Chip icon="🗣️" label={v.language} />}
+                {v.timezone  && <Chip icon="🕐" label={v.timezone} />}
+                {v.isp       && <Chip icon="📡" label={v.isp} />}
+              </div>
             </div>
           ))}
         </div>
